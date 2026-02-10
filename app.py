@@ -52,20 +52,18 @@ elif mode == "📝 編輯專案":
     st.subheader("🛠️ 雲端編輯模式")
     # 使用 Streamlit 內建的編輯器，直接修改表格
     edited_df = st.data_editor(st.session_state.projects, num_rows="dynamic", use_container_width=True)
-    
+
 if st.button("💾 儲存並同步至 Google Sheets"):
     try:
-        # 建立連接並更新，自動尋找第一個工作表
+        # 使用服務帳號認證進行更新
         conn.update(
-            spreadsheet=st.secrets["connections"]["gsheets"]["spreadsheet"],
-            data=edited_df
+            data=edited_df,
+            worksheet="Sheet1" # 確認你的工作表名稱
         )
         st.session_state.projects = edited_df
-        st.success("✅ 雲端同步成功！你可以打開試算表查看即時更新。")
+        st.success("✅ 認證成功！雲端同步已完成。")
     except Exception as e:
-        st.error(f"同步失敗！請確認 Google Sheets 是否已開啟『編輯者』權限。")
-        st.info(f"技術錯誤訊息: {e}")
-
+        st.error(f"同步失敗！錯誤訊息: {e}")    
 
 elif mode == "🍎 法文工具":
     # (保留你原本的翻譯邏輯代碼...)
