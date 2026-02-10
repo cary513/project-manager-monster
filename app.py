@@ -56,8 +56,8 @@ elif mode == "📝 編輯專案":
 if st.button("💾 儲存並同步至 Google Sheets"):
     try:
         # 使用服務帳號認證進行更新
-        conn.update(
-            data=edited_df,
+        # 讓程式自動尋找第一個工作表，最不容易出錯
+conn.update(data=edited_df),
             worksheet="工作表1" # 請確認你的 Google Sheets 標籤名稱，通常是 工作表1 或 Sheet1
         )
         st.session_state.projects = edited_df
