@@ -58,12 +58,13 @@ if st.button("💾 儲存並同步至 Google Sheets"):
         # 使用服務帳號認證進行更新
         conn.update(
             data=edited_df,
-            worksheet="Sheet1" # 確認你的工作表名稱
+            worksheet="工作表1" # 請確認你的 Google Sheets 標籤名稱，通常是 工作表1 或 Sheet1
         )
         st.session_state.projects = edited_df
-        st.success("✅ 認證成功！雲端同步已完成。")
+        st.success("✅ 同步成功！資料已寫入雲端。")
     except Exception as e:
-        st.error(f"同步失敗！錯誤訊息: {e}")    
+        st.error(f"同步失敗！請確認 Secrets 格式與 Google Sheets 編輯權限。")
+        st.info(f"錯誤訊息: {e}")
 
 elif mode == "🍎 法文工具":
     # (保留你原本的翻譯邏輯代碼...)
