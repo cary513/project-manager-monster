@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_gsheets import GSheetsConnection
 import pandas as pd
 from deep_translator import GoogleTranslator
 
@@ -94,10 +95,7 @@ elif mode == "🛠️ 專案架構編輯":
     if st.button(f"🗑️ 刪除整個 {target_p} 專案"):
         del st.session_state.projects[target_p]
         st.rerun()
-import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
-from deep_translator import GoogleTranslator
+
 
 # 1. 頁面配置
 st.set_page_config(page_title="Solo Evolution Tracker Cloud", layout="wide")
