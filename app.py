@@ -58,7 +58,7 @@ elif mode == "📝 編輯專案":
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
             # 儲存到雲端
-            conn.update(data=edited_df)
+            conn.update(data=edited_df)# 讓它自動抓第一個分頁
             st.session_state.projects = edited_df
             st.success("✅ 同步成功！資料已寫入雲端。")
             st.balloons() 
