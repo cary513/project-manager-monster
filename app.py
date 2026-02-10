@@ -3,57 +3,94 @@ import pandas as pd
 from deep_translator import GoogleTranslator
 
 # 1. 頁面配置
-st.set_page_config(page_title="Solo Evolution Tracker", layout="wide")
+st.set_page_config(page_title="Solo Evolution Tracker Pro", layout="wide")
 
-# 2. 初始化專案數據 (使用 Session State 保持編輯狀態)
-if 'project_db' not in st.session_state:
-    st.session_state.project_db = pd.DataFrame([
-        {"專案名稱": "醫療輔助 App", "進度%": 65, "工具": "Python/Scraping", "阻礙點": "API 限流", "差異化維度": "跨境醫療預填"},
-        {"專案名稱": "心靈成長 App", "進度%": 42, "工具": "Rive/Figma", "阻礙點": "互動狀態機邏輯", "差異化維度": "沉浸式互動"},
-        {"專案名稱": "法語學習專案", "進度%": 80, "工具": "DeepTranslator", "阻礙點": "語態變化", "差異化維度": "盧森堡語境特化"}
-    ])
+# 2. 初始化資料庫 (Session State)
+# 使用字典結構來支援「專案 > 步驟」的階層
+if 'projects' not in st.session_state:
+    st.session_state.projects = {
+        "醫療輔助 App": {
+            "進度": 65, "工具": "Python/Scraping", "阻礙點": "API 限流",
+            "步驟": ["爬蟲腳本撰寫", "翻譯邏輯串接", "UI 原型設計"],
+            "排程": "2026-03-01"
+        },
+        "心靈成長 App": {
+            "進度": 42, "工具": "Rive/Figma", "阻礙點": "狀態機邏輯",
+            "步驟": ["品牌核心定義", "Rive 動畫製作", "社交破冰邏輯"],
+            "排程": "2026-04-15"
+        },
+        "法語學習": {
+            "進度": 80, "工具": "DeepTranslator", "阻礙點": "語法複雜度",
+            "步驟": ["B1 動詞變位", "盧森堡職場用語", "聽力模擬練習"],
+            "排程": "2026-02-28"
+        }
+    }
 
-if 'history' not in st.session_state:
-    st.session_state.history = []
-
-# --- 側邊欄：功能切換與法文學習 ---
+# --- 側邊欄：法文與功能切換 ---
 with st.sidebar:
-    st.title("⚙️ 管理面板")
-    mode = st.radio("選擇模式", ["📊 檢視看板", "📝 編輯專案內容"])
-    
-    st.write("---")
-    st.header("🍎 法文自動化學習")
-    with st.form("translation_form", clear_on_submit=True):
-        user_input = st.text_input("請輸入中文單字")
-        if st.form_submit_button("執行翻譯"):
-            if user_input:
-                res = GoogleTranslator(source='zh-TW', target='fr').translate(user_input).lower()
-                st.session_state.history.append({"中文": user_input, "法文": res})
-                st.success(f"✨ {res}")
+    st.title("⚙️ 控制中心")
+    mode = st.radio("功能切換", ["📋 檢視看板", "🛠️ 專案架構編輯", "🍎 法文工具"])
+    st.markdown("---")
+    if mode == "🍎 法文工具":
+        user_input = st.text_input("輸入中文單字")
+        if st.button("翻譯"):
+            res = GoogleTranslator(source='zh-TW', target='fr').translate(user_input)
+            st.success(f"✨ {res}")
 
 # --- 主畫面邏輯 ---
-st.title("🔭 內在座標 | Project Manager")
+st.title("🔭 內在座標 | Project Logic System")
 
-if mode == "📝 編輯專案內容":
-    st.subheader("編輯模式：直接修改下方表格內容")
-    # 使用 data_editor 讓表格變為可編輯
-    edited_df = st.data_editor(st.session_state.project_db, num_rows="dynamic", use_container_width=True)
-    if st.button("💾 儲存所有變更"):
-        st.session_state.project_db = edited_df
-        st.success("變更已成功存儲！")
+# A. 檢視看板模式 (排程視角)
+if mode == "📋 檢視看板":
+    st.subheader("🗓️ 專案排程與進度綜覽")
+    cols = st.columns(len(st.session_state.projects))
+    for i, (p_name, p_data) in enumerate(st.session_state.projects.items()):
+        with cols[i]:
+            with st.container(border=True):
+                st.markdown(f"### {p_name}")
+                st.caption(f"📅 預計完成: {p_data['排程']}")
+                st.progress(int(p_data['進度']))
+                st.write(f"**下一階段步驟:**")
+                for step in p_data['步驟'][:2]: # 只顯示前兩個步驟
+                    st.write(f"- {step}")
+                if st.button(f"進入 {p_name} 詳情", key=f"view_{p_name}"):
+                    st.session_state.current_p = p_name
 
-else:
-    # 檢視模式：原本的卡片美化介面
-    st.subheader("📁 專案執行資料夾 (Folders)")
-    cols = st.columns(3)
-    for i, row in st.session_state.project_db.iterrows():
-        with cols[i % 3]:
-            with st.expander(f"**{row['專案名稱']}**", expanded=True):
-                st.write(f"🛠️ 工具: {row['工具']}")
-                st.write(f"🛑 阻礙: {row['阻礙點']}")
-                st.progress(int(row['進度%']))
-                st.caption(f"進度: {row['進度%']}% | 核心: {row['差異化維度']}")
+# B. 專案架構編輯 (自由增減欄位與層級)
+elif mode == "🛠️ 專案架構編輯":
+    st.subheader("📝 結構管理：編輯專案、步驟與自定義屬性")
+    
+    # 選項：新增專案
+    with st.expander("➕ 新增全新專案"):
+        new_p_name = st.text_input("專案名稱")
+        if st.button("建立專案"):
+            st.session_state.projects[new_p_name] = {"進度": 0, "工具": "", "阻礙點": "", "步驟": [], "排程": ""}
+            st.rerun()
 
-# 下載練習紀錄
-if st.session_state.history:
-    st.download_button("📥 導出法文紀錄", pd.DataFrame(st.session_state.history).to_csv(index=False).encode('utf-8-sig'), "french.csv")
+    st.markdown("---")
+    
+    # 編輯現有專案內容
+    target_p = st.selectbox("選擇要編輯的專案", list(st.session_state.projects.keys()))
+    p_content = st.session_state.projects[target_p]
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("#### 1. 核心屬性編輯")
+        p_content["進度"] = st.slider("進度 %", 0, 100, int(p_content["進度"]))
+        p_content["排程"] = st.text_input("排程 (YYYY-MM-DD)", p_content["排程"])
+        p_content["工具"] = st.text_input("使用工具", p_content["工具"])
+        p_content["阻礙點"] = st.text_area("阻礙點 (Blockers)", p_content["阻礙點"])
+        
+    with col2:
+        st.write("#### 2. 下一層級：具體行動步驟")
+        # 顯示並編輯步驟
+        new_steps = st.text_area("編輯步驟 (每行一個步驟)", value="\n".join(p_content["步驟"]))
+        p_content["步驟"] = new_steps.split("\n") if new_steps else []
+        
+    if st.button(f"💾 儲存 {target_p} 的變更"):
+        st.session_state.projects[target_p] = p_content
+        st.success("更新成功！")
+        
+    if st.button(f"🗑️ 刪除整個 {target_p} 專案"):
+        del st.session_state.projects[target_p]
+        st.rerun()
