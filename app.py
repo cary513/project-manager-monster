@@ -10,7 +10,7 @@ st.set_page_config(page_title="Solo Evolution Tracker Cloud", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def get_data():
-    # 這裡會讀取你在 Secrets 中設定的試算表
+    # 這裡會自動讀取 Secrets 中的設定
     return conn.read(ttl="1m") 
 
 # 3. 初始化或讀取資料
@@ -18,8 +18,8 @@ if 'projects' not in st.session_state:
     try:
         st.session_state.projects = get_data()
     except Exception as e:
-        # 如果讀取失敗，顯示錯誤原因方便 Debug
-        st.warning(f"目前無法從雲端讀取資料，請檢查 Secrets 設定。")
+        # 顯示警示，讓你知道雲端讀取狀態
+        st.warning("目前無法從雲端讀取資料，請檢查 Secrets 設定。")
         st.session_state.projects = pd.DataFrame([
             {"專案名稱": "醫療輔助 App", "進度": 65, "工具": "Python", "阻礙": "無", "步驟": "流程分析", "排程": "2026-03-01"}
         ])
@@ -39,7 +39,6 @@ st.title("🔭 內在座標 | Cloud Project Manager")
 if mode == "📊 檢視看板":
     df = st.session_state.projects
     cols = st.columns(3)
-    # 確保資料是 DataFrame 格式
     for i, row in df.iterrows():
         with cols[i % 3]:
             with st.container(border=True):
@@ -52,24 +51,24 @@ if mode == "📊 檢視看板":
 
 elif mode == "📝 編輯專案":
     st.subheader("🛠️ 雲端編輯模式")
-    # 這裡顯示編輯器
+    # 顯示編輯表格
     edited_df = st.data_editor(st.session_state.projects, num_rows="dynamic", use_container_width=True)
     
-    # 【關鍵修正】儲存按鈕必須放在編輯模式的縮排內，或是獨立判斷
+    # 【關鍵修正】這段代碼現在有了正確的縮排
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
-            # 自動更新第一個分頁 (工作表1)
+            # 儲存到雲端
             conn.update(data=edited_df)
             st.session_state.projects = edited_df
-            st.success("✅ 同步成功！資料已寫入雲端 Google Sheets。")
-            st.balloons() # 成功的小驚喜
+            st.success("✅ 同步成功！資料已寫入雲端。")
+            st.balloons() 
         except Exception as e:
-            st.error(f"同步失敗！")
-            st.info(f"技術錯誤訊息: {e}")
+            st.error(f"同步失敗！請檢查權限設定。")
+            st.info(f"錯誤訊息: {e}")
 
 elif mode == "🍎 法文工具":
     st.subheader("🍎 法文自動化學習")
-    user_input = st.text_input("輸入中文單字")
-    if user_input:
-        res = GoogleTranslator(source='zh-TW', target='fr').translate(user_input)
+    word = st.text_input("輸入中文單字")
+    if word:
+        res = GoogleTranslator(source='zh-TW', target='fr').translate(word)
         st.success(f"✨ 法文翻譯：{res}")
