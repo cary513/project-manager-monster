@@ -49,23 +49,49 @@ if mode == "📊 檢視看板":
                 with st.expander("查看行動細節"):
                     st.write(row['步驟'])
 
+# --- 這裡放在主程式區塊，確保 get_data 是全域可用的 ---
+def get_data():
+    # 明確指定工作表名稱為「工作表1」
+    # 使用 worksheet 參數確保精準讀取
+    return conn.read(worksheet="工作表1", ttl="1m")
+
+# --- 模式切換邏輯 ---
+if mode == "📊 檢視看板":
+    # 檢視邏輯...
+    pass
+
 elif mode == "📝 編輯專案":
     st.subheader("🛠️ 雲端編輯模式")
-    # 顯示編輯表格
-    edited_df = st.data_editor(st.session_state.projects, num_rows="dynamic", use_container_width=True)
     
-    # 【關鍵修正】這段代碼現在有了正確的縮排
+    # 確保 session_state 裡有資料，否則先抓取
+    if st.session_state.projects is None or st.session_state.projects.empty:
+        st.session_state.projects = get_data()
+
+    # 1. 顯示編輯表格：使用 data_editor 允許動態增減列
+    edited_df = st.data_editor(
+        st.session_state.projects, 
+        num_rows="dynamic", 
+        use_container_width=True,
+        key="project_editor"
+    )
+    
+    # 2. 儲存按鈕邏輯：必須與 edited_df 在同一層級
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
-            # 儲存到雲端
-            conn.update(data=edited_df)# 讓它自動抓第一個分頁
+            # 產品邏輯：明確指定寫入到「工作表1」
+            conn.update(
+                worksheet="工作表1",
+                data=edited_df
+            )
+            # 更新記憶體中的狀態，確保 UI 即時反應
             st.session_state.projects = edited_df
             st.success("✅ 同步成功！資料已寫入雲端。")
             st.balloons() 
+            
         except Exception as e:
-            st.error(f"同步失敗！請檢查權限設定。")
-            st.info(f"錯誤訊息: {e}")
-
+            st.error("同步失敗！請檢查權限設定。")
+            st.info(f"技術診斷訊息: {e}")
+            
 elif mode == "🍎 法文工具":
     st.subheader("🍎 法文自動化學習")
     word = st.text_input("輸入中文單字")
