@@ -9,19 +9,17 @@ st.set_page_config(page_title="Solo Evolution Tracker Cloud", layout="wide")
 # 2. 連接配置與全域變數
 conn = st.connection("gsheets", type=GSheetsConnection)
 
-# 關鍵配置：確保與 Google Sheets 端完全一致
+# 關鍵路徑設定：請確保 SHEET_URL 網址與 WORKSHEET_NAME 名稱完全正確
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1JgBfeDw5aHkazCiR-kqFw7jJ8EC0DGGgnBm8kaJT7pk/edit#gid=0"
-WORKSHEET_NAME = "Sheet1" # 已經改為英文，避開 ASCII 錯誤
+WORKSHEET_NAME = "Sheet1" # 已根據您的指示修正為 Sheet1
 
-# 讀取時
 def get_data():
+    """封裝讀取邏輯，確保路徑一致性"""
     return conn.read(
         spreadsheet=SHEET_URL, 
-        worksheet=WORKSHEET_NAME, # 使用變數
+        worksheet=WORKSHEET_NAME, 
         ttl="1m"
     )
-
-
 
 # 3. 初始化 Session State
 if 'projects' not in st.session_state:
@@ -29,6 +27,7 @@ if 'projects' not in st.session_state:
         st.session_state.projects = get_data()
     except Exception as e:
         st.error(f"連線失敗原因：{e}")
+        # 建立預設欄位，防止看板初始化報錯
         st.session_state.projects = pd.DataFrame(columns=["專案名稱", "進度", "工具", "阻礙", "步驟", "排程"])
 
 # --- 側邊欄控制台 ---
@@ -70,7 +69,7 @@ if mode == "📊 檢視看板":
                         with st.expander("查看行動細節"):
                             st.write(str(row['步驟']))
         else:
-            st.warning("資料表格式不符，請至編輯模式檢查欄位名稱。")
+            st.warning("資料表格式不符，請至編輯模式檢查欄位名稱（專案名稱、進度、排程、阻礙、步驟）。")
     else:
         st.info("目前雲端沒有資料，請切換至編輯模式新增。")
 
@@ -85,14 +84,14 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
-# 儲存時
-if st.button("💾 儲存並同步至 Google Sheets"):
-    try:
-        conn.update(
-            spreadsheet=SHEET_URL,
-            worksheet=WORKSHEET_NAME, # 使用變數
-            data=edited_df
-        )
+    # 儲存邏輯：必須嚴格縮排在編輯模式區塊內
+    if st.button("💾 儲存並同步至 Google Sheets"):
+        try:
+            conn.update(
+                spreadsheet=SHEET_URL,
+                worksheet=WORKSHEET_NAME,
+                data=edited_df
+            )
             st.session_state.projects = edited_df
             st.success("✅ 同步成功！雲端資料已更新。")
             st.balloons()
@@ -108,4 +107,4 @@ elif mode == "🍎 法文工具":
             res = GoogleTranslator(source='zh-TW', target='fr').translate(word)
             st.success(f"✨ 法文翻譯：{res}")
         except Exception as e:
-            st.error(f"翻譯服務異常：{e}")
+            st.error(f"翻譯服務異常：{e
