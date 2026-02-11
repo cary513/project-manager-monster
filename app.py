@@ -94,7 +94,7 @@ elif mode == "📝 編輯專案":
         try:
             conn.update(
                 spreadsheet=SHEET_URL,
-                worksheet=WORKSHEET_NAME,
+                worksheet=Sheet1,
                 data=edited_df
             )
             st.session_state.projects = edited_df
