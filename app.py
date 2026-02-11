@@ -73,7 +73,18 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
-    # 儲存邏輯
+   # 儲存按鈕邏輯
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
-            # 產品實戰邏輯：將編輯後的 DataFrame 完整覆寫回「工作表1」
+            # --- 以下兩行必須比 try 縮排更深（4 個空格） ---
+            conn.update(
+                worksheet="工作表1",
+                data=edited_df
+            )
+            st.session_state.projects = edited_df
+            st.success("✅ 同步成功！雲端資料已更新。")
+            st.balloons()
+            
+        except Exception as e:
+            st.error(f"同步失敗！")
+            st.info(f"技術診斷訊息: {e}")
