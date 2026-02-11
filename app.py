@@ -91,8 +91,7 @@ if st.button("💾 儲存並同步至 Google Sheets"):
         st.info(f"技術診斷訊息: {e}")
         except Exception as e:
 
-        # 這行能讓 App 直接在畫面上顯示「為什麼」讀不到
+ # 這行能讓 App 直接在畫面上顯示「為什麼」讀不到
 
         st.error(f"連線失敗原因：{e}")
-
         st.session_state.projects = pd.DataFrame([...])
