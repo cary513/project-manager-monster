@@ -53,7 +53,7 @@ if mode == "📊 檢視看板":
 def get_data():
     # 明確指定工作表名稱為「工作表1」
     # 使用 worksheet 參數確保精準讀取
-    return conn.read(worksheet="工作表1", ttl="1m")
+    return conn.read(worksheet="01", ttl="Project_DB")
 
 # --- 模式切換邏輯 ---
 if mode == "📊 檢視看板":
