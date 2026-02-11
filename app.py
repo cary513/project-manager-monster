@@ -79,9 +79,11 @@ elif mode == "📝 編輯專案":
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
             # 產品邏輯：明確指定寫入到「工作表1」
-            conn.update(
-                worksheet="工作表1",
-                data=edited_df
+            cdef get_data():
+    # 邏輯分析：
+    # worksheet 應填入試算表底部的標籤名稱，例如 "工作表1"
+    # ttl (Time To Live) 應填入數字或字串如 "1m"，代表資料緩存 1 分鐘
+    return conn.read(worksheet="工作表1", ttl="1m")
             )
             # 更新記憶體中的狀態，確保 UI 即時反應
             st.session_state.projects = edited_df
