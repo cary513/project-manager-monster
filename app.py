@@ -10,15 +10,14 @@ st.set_page_config(page_title="Solo Evolution Tracker Cloud", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def get_data():
-    # 這裡明確指定分頁名稱為「工作表1」
+    # 統一指向 Google Sheet 底部的分頁名稱
     return conn.read(worksheet="工作表1", ttl="1m")
 
-# 3. 初始化資料
+# 3. 初始化或讀取資料
 if 'projects' not in st.session_state:
     try:
         st.session_state.projects = get_data()
     except Exception as e:
-        # 當連線失敗時顯示錯誤原因，幫助 Debug
         st.error(f"連線失敗原因：{e}")
         st.session_state.projects = pd.DataFrame([
             {"專案名稱": "醫療輔助 App", "進度": 65, "工具": "Python", "阻礙": "無", "步驟": "流程分析", "排程": "2026-03-01"}
@@ -52,7 +51,7 @@ if mode == "📊 檢視看板":
                     st.write(f"📅 **排程**: {row['排程']}")
                     st.write(f"🛑 **阻礙**: {row['阻礙']}")
                     with st.expander("查看行動細節"):
-                        st.write(row['步驟'])
+                        st.write(str(row['步驟']))
 
 elif mode == "📝 編輯專案":
     st.subheader("🛠️ 雲端編輯模式")
@@ -65,10 +64,8 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
-    # 儲存按鈕與縮排修正
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
-            # 確保寫入正確的分頁
             conn.update(
                 worksheet="工作表1",
                 data=edited_df
