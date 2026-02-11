@@ -107,4 +107,4 @@ elif mode == "🍎 法文工具":
             res = GoogleTranslator(source='zh-TW', target='fr').translate(word)
             st.success(f"✨ 法文翻譯：{res}")
         except Exception as e:
-            st.error(f"翻譯服務異常：{e
+            st.error(f"翻譯服務異常：{e}")
