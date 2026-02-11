@@ -13,13 +13,15 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 SHEET_URL = "https://docs.google.com/spreadsheets/d/1JgBfeDw5aHkazCiR-kqFw7jJ8EC0DGGgnBm8kaJT7pk/edit#gid=0"
 WORKSHEET_NAME = "Sheet1" # 已經改為英文，避開 ASCII 錯誤
 
+# 讀取時
 def get_data():
-    """封裝讀取邏輯"""
     return conn.read(
         spreadsheet=SHEET_URL, 
-        worksheet=WORKSHEET_NAME, 
+        worksheet=WORKSHEET_NAME, # 使用變數
         ttl="1m"
     )
+
+
 
 # 3. 初始化 Session State
 if 'projects' not in st.session_state:
@@ -83,14 +85,14 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
-    # 儲存按鈕與對齊的邏輯區塊
-    if st.button("💾 儲存並同步至 Google Sheets"):
-        try:
-            conn.update(
-                spreadsheet=SHEET_URL,
-                worksheet="Sheet1",
-                data=edited_df
-            )
+# 儲存時
+if st.button("💾 儲存並同步至 Google Sheets"):
+    try:
+        conn.update(
+            spreadsheet=SHEET_URL,
+            worksheet=WORKSHEET_NAME, # 使用變數
+            data=edited_df
+        )
             st.session_state.projects = edited_df
             st.success("✅ 同步成功！雲端資料已更新。")
             st.balloons()
