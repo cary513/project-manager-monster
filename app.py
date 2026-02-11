@@ -10,14 +10,15 @@ st.set_page_config(page_title="Solo Evolution Tracker Cloud", layout="wide")
 conn = st.connection("gsheets", type=GSheetsConnection)
 
 def get_data():
-    # 統一指向 Google Sheet 底部的分頁名稱
+    # 明確指定分頁名稱，確保路徑一致
     return conn.read(worksheet="工作表1", ttl="1m")
 
-# 3. 初始化或讀取資料
+# 3. 初始化資料
 if 'projects' not in st.session_state:
     try:
         st.session_state.projects = get_data()
     except Exception as e:
+        # 直接顯示錯誤原因，方便您確認金鑰狀態
         st.error(f"連線失敗原因：{e}")
         st.session_state.projects = pd.DataFrame([
             {"專案名稱": "醫療輔助 App", "進度": 65, "工具": "Python", "阻礙": "無", "步驟": "流程分析", "排程": "2026-03-01"}
@@ -40,12 +41,13 @@ st.title("🔭 內在座標 | Cloud Project Manager")
 
 if mode == "📊 檢視看板":
     df = st.session_state.projects
-    if not df.empty:
+    if df is not None and not df.empty:
         cols = st.columns(3)
         for i, row in df.iterrows():
             with cols[i % 3]:
                 with st.container(border=True):
                     st.markdown(f"### {row['專案名稱']}")
+                    # 確保進度為整數
                     progress_val = int(row['進度']) if pd.notnull(row['進度']) else 0
                     st.progress(min(max(progress_val, 0), 100))
                     st.write(f"📅 **排程**: {row['排程']}")
@@ -56,7 +58,7 @@ if mode == "📊 檢視看板":
 elif mode == "📝 編輯專案":
     st.subheader("🛠️ 雲端編輯模式")
     
-    # 使用 data_editor 實現自由修改
+    # 實現自由編輯的核心：num_rows="dynamic"
     edited_df = st.data_editor(
         st.session_state.projects, 
         num_rows="dynamic", 
@@ -64,6 +66,7 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
+    # 儲存按鈕：縮排必須嚴格對齊
     if st.button("💾 儲存並同步至 Google Sheets"):
         try:
             conn.update(
