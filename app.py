@@ -90,13 +90,13 @@ elif mode == "📝 編輯專案":
     )
     
     # 儲存邏輯：對齊縮排
-    if st.button("💾 儲存並同步至 Google Sheets"):
-        try:
-            conn.update(
-                spreadsheet=SHEET_URL,
-                worksheet=Sheet1,
-                data=edited_df
-            )
+if st.button("💾 儲存並同步至 Google Sheets"):
+    try:
+        conn.update(
+            spreadsheet=SHEET_URL,
+            worksheet="Sheet1", # 這裡也要同步改為 Sheet1
+            data=edited_df
+        )
             st.session_state.projects = edited_df
             st.success("✅ 同步成功！雲端資料已更新。")
             st.balloons()
