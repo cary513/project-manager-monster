@@ -73,18 +73,26 @@ elif mode == "📝 編輯專案":
         key="project_editor"
     )
     
-   # 儲存按鈕邏輯
-    if st.button("💾 儲存並同步至 Google Sheets"):
-        try:
-            # --- 以下兩行必須比 try 縮排更深（4 個空格） ---
-            conn.update(
-                worksheet="工作表1",
-                data=edited_df
-            )
-            st.session_state.projects = edited_df
-            st.success("✅ 同步成功！雲端資料已更新。")
-            st.balloons()
-            
+# --- 修正後的儲存邏輯段落 ---
+if st.button("💾 儲存並同步至 Google Sheets"):
+    try:
+        # 確保此區塊比 try 多縮排 4 個空格
+        conn.update(
+            worksheet="工作表1",
+            data=edited_df
+        )
+        st.session_state.projects = edited_df
+        st.success("✅ 同步成功！雲端資料已更新。")
+        st.balloons()
+        # 儲存後立即重新整理，確保數據一致
+        st.rerun()
+    except Exception as e:
+        st.error(f"同步失敗！")
+        st.info(f"技術診斷訊息: {e}")
         except Exception as e:
-            st.error(f"同步失敗！")
-            st.info(f"技術診斷訊息: {e}")
+
+        # 這行能讓 App 直接在畫面上顯示「為什麼」讀不到
+
+        st.error(f"連線失敗原因：{e}")
+
+        st.session_state.projects = pd.DataFrame([...])
