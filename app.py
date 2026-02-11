@@ -73,22 +73,28 @@ elif mode == "📝 編輯專案":
         use_container_width=True,
         key="project_editor"
     )
-    
-    if st.button("💾 儲存並同步至 Google Sheets"):
-        try:
-            # 儲存時同樣明確指定 spreadsheet
-            conn.update(
-                spreadsheet=SHEET_URL,
-                worksheet="工作表1",
-                data=edited_df
-            )
-            st.session_state.projects = edited_df
-            st.success("✅ 同步成功！雲端資料已更新。")
-            st.balloons()
-            st.rerun()
-        except Exception as e:
-            st.error(f"同步失敗！技術診斷訊息: {e}")
+# --- 修正後的讀取邏輯 ---
+def get_data():
+    return conn.read(
+        spreadsheet=SHEET_URL, 
+        worksheet="Sheet1",  # 改為純英文名稱
+        ttl="1m"
+    )
 
+# --- 修正後的儲存邏輯 (對應截圖處) ---
+if st.button("💾 儲存並同步至 Google Sheets"):
+    try:
+        conn.update(
+            spreadsheet=SHEET_URL,
+            worksheet="Sheet1", # 同樣改為 Sheet1
+            data=edited_df
+        )
+        st.session_state.projects = edited_df
+        st.success("✅ 同步成功！雲端資料已更新。")
+        st.balloons()
+        st.rerun()
+    except Exception as e:
+        st.error(f"同步失敗！技術診斷訊息: {e}")
 elif mode == "🍎 法文工具":
     st.subheader("🍎 法文自動化學習")
     word = st.text_input("輸入中文單字")
