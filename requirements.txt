@@ -1,4 +1,12 @@
-streamlit
-pandas
-deep-translator
-st-gsheets-connection
+# 資料庫與模型管理
+sqlmodel==0.0.12
+sqlalchemy>=2.0.0
+
+# 前端介面與視覺化
+streamlit>=1.30.0
+plotly>=5.18.0
+pandas>=2.0.0
+
+# 後端自動化與提醒
+apscheduler>=3.10.0
+python-dotenv>=1.0.0
