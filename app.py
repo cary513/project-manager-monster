@@ -1,34 +1,40 @@
-from typing import Optional, List
-from datetime import datetime
-from sqlmodel import Field, SQLModel, Relationship
+from sqlmodel import SQLModel, create_engine, Session, select
+from models import Project, Task, Log  # 假設你已將模型放入 models.py
 
-# 1. 專案層級模型
-class Project(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    title: str
-    deadline: datetime
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    
-    tasks: List["Task"] = Relationship(back_populates="project")
+# 1. 建立資料庫引擎 (使用 SQLite 進行本地測試)
+sqlite_file_name = "evolution.db"
+sqlite_url = f"sqlite:///{sqlite_file_name}"
+engine = create_engine(sqlite_url)
 
-# 2. 任務層級模型
-class Task(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    project_id: int = Field(foreign_key="project.id")
-    title: str
-    status: str = "todo"  # todo, in_progress, done
-    est_hours: float
-    
-    project: Project = Relationship(back_populates="tasks")
-    logs: List["Log"] = Relationship(back_populates="task")
+def create_db_and_tables():
+    SQLModel.metadata.create_all(engine)
 
-# 3. 歷程日誌模型
-class Log(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    task_id: int = Field(foreign_key="task.id")
-    duration: float
-    progress_val: int
-    note: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    
-    task: Task = Relationship(back_populates="logs")
+def add_demo_data():
+    with Session(engine) as session:
+        # 建立專案
+        my_project = Project(title="AI 學習專案", deadline="2026-12-31")
+        session.add(my_project)
+        session.commit()
+        
+        # 建立任務並關聯專案
+        my_task = Task(title="Python 自動化設計", est_hours=20, project_id=my_project.id)
+        session.add(my_task)
+        session.commit()
+        
+        # 建立過程日誌
+        log = Log(task_id=my_task.id, duration=2.5, progress_val=15, note="完成基礎開發環境配置")
+        session.add(log)
+        session.commit()
+        print("Demo 資料已寫入！")
+
+def get_project_progress():
+    with Session(engine) as session:
+        statement = select(Task).where(Task.project_id == 1)
+        results = session.exec(statement).all()
+        for task in results:
+            print(f"任務: {task.title}, 進度: {task.status}")
+
+if __name__ == "__main__":
+    create_db_and_tables()
+    add_demo_data()
+    get_project_progress()
