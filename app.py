@@ -20,16 +20,10 @@ except Exception as e:
 st.sidebar.header("📆 日期選擇")
 selected_date = st.sidebar.date_input("查看日期", date.today())
 
-st.sidebar.header("💪 快速記錄")
-weight = st.sidebar.number_input("體重 (kg)", value=65.0, step=0.1)
-mood = st.sidebar.text_input("今日心情", "")
-if st.sidebar.button("儲存記錄"):
-    st.sidebar.success("✅ 已儲存")
-
 # 主內容
 st.header(f"📍 {selected_date} 今日重點")
 
-# 今日進度（放在上方）
+# 今日進度
 st.subheader("📊 今日進度")
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -39,13 +33,12 @@ with col2:
 with col3:
     st.metric("文章/作品", "1 項", "↑1")
 
-# 今日行程
+# 行程
 day_type = "saturday" if selected_date.strftime("%A") == "Saturday" else "sunday" if selected_date.strftime("%A") == "Sunday" else "weekday"
 
 try:
     response = supabase.table("schedule_templates").select("*").eq("day_type", day_type).execute()
     df = pd.DataFrame(response.data)
-    
     if not df.empty:
         st.subheader("⏰ 今日詳細行程")
         for idx, row in df.iterrows():
@@ -64,18 +57,23 @@ try:
 except Exception as e:
     st.error(f"讀取失敗: {e}")
 
-# 手動新增
-if st.button("➕ 新增自訂待辦事項"):
-    st.session_state.show_form = True
+# 快速記錄 + 永久儲存
+st.subheader("💪 快速記錄")
+weight = st.number_input("體重 (kg)", value=65.0, step=0.1)
+notes = st.text_area("今日心得・明天3件事", height=120)
 
-if st.session_state.get("show_form", False):
-    with st.form("add_task"):
-        new_time = st.text_input("時間 (例: 20:00-21:00)")
-        new_task = st.text_input("任務名稱")
-        new_desc = st.text_input("描述")
-        if st.form_submit_button("確認新增"):
-            st.success(f"✅ 已新增：{new_time} - {new_task}")
-            st.session_state.show_form = False
+if st.button("💾 儲存今日記錄", type="primary"):
+    try:
+        data = {
+            "user_id": "您的 user id",  # 暫用固定值，之後可改成登入
+            "log_date": selected_date.isoformat(),
+            "weight": weight,
+            "notes": notes,
+            "diet_168_completed": True
+        }
+        supabase.table("daily_logs").upsert(data).execute()
+        st.success("✅ 記錄已永久儲存！")
+    except Exception as e:
+        st.error(f"儲存失敗: {e}")
 
 st.success("🍽️ 16:8 飲食窗：12:00 – 20:20")
-st.info("🏋️ 今日運動：參考每週表（週日主動恢復）")
