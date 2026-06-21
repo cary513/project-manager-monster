@@ -87,4 +87,4 @@ elif page == "設定":
     st.title("⚙️ 設定")
     st.write("Supabase 連線資訊、個人目標等")
 
-st.caption("由 Grok 為您設計的 Supabase + Streamlit 行事曆 APP")
+
