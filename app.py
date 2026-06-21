@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import date, timedelta
+from datetime import date
 
 st.set_page_config(page_title="個人品牌成長行事曆", layout="wide", page_icon="📅")
 
@@ -24,26 +24,27 @@ except Exception as e:
     st.error(f"連線失敗: {e}")
     st.stop()
 
-# 側邊欄日曆
-st.sidebar.header("📆 日期選擇")
-selected_date = st.sidebar.date_input("選擇日期", date.today())
+today = date.today()
+weekday = today.strftime("%A")
 
-# 今日資訊
-st.header(f"📍 {selected_date}（{selected_date.strftime('%A')}）")
+st.header(f"📍 今日完整行程 · {today}（{weekday}）")
 
-day_type = "saturday" if selected_date.strftime("%A") == "Saturday" else "sunday" if selected_date.strftime("%A") == "Sunday" else "weekday"
+if weekday == "Saturday":
+    day_type = "saturday"
+elif weekday == "Sunday":
+    day_type = "sunday"
+else:
+    day_type = "weekday"
 
 try:
-    # 行程表
     response = supabase.table("schedule_templates").select("*").eq("day_type", day_type).execute()
     df = pd.DataFrame(response.data)
     
     if not df.empty:
-        st.subheader("📋 詳細行程")
-        completed = {}
+        st.subheader("⏰ 一整天詳細行程")
         for idx, row in df.iterrows():
             with st.container(border=True):
-                col1, col2, col3 = st.columns([1.5, 5, 1])
+                col1, col2, col3 = st.columns([2, 6, 2])
                 with col1:
                     st.markdown(f"**{row.get('time_slot', '')}**")
                 with col2:
@@ -51,16 +52,14 @@ try:
                     if row.get('description'):
                         st.caption(row['description'])
                 with col3:
-                    done = st.checkbox("完成", key=f"task_{idx}_{selected_date}", value=False)
-                    completed[row.get('time_slot')] = done
+                    st.checkbox("完成", key=f"task_{idx}")
     else:
-        st.info("尚未找到行程模板")
+        st.info("請確認 schema 與資料已正確插入")
 except Exception as e:
     st.error(f"讀取失敗: {e}")
 
-st.success("🍽️ 16:8 飲食窗：12:00 – 20:20")
+st.success("🍽️ 16:8 飲食窗：**12:00 – 20:20**")
 
-# 快速記錄
 st.subheader("💪 快速記錄")
 weight = st.number_input("體重 (kg)", value=65.0, step=0.1)
 notes = st.text_area("今日心得・明天3件事", height=120)
@@ -68,3 +67,5 @@ notes = st.text_area("今日心得・明天3件事", height=120)
 if st.button("💾 儲存今日記錄", type="primary"):
     st.success("✅ 已儲存！")
     st.balloons()
+
+st.caption("Made with ❤️ by Grok")
