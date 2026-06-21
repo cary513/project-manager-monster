@@ -24,14 +24,16 @@ except Exception as e:
     st.error(f"連線失敗: {e}")
     st.stop()
 
-today = date.today()
-weekday = today.strftime("%A")
+# 側邊欄日曆
+st.sidebar.header("📆 日期選擇")
+selected_date = st.sidebar.date_input("選擇日期查看", date.today())
 
-st.header(f"📍 今日完整行程 · {today}（{weekday}）")
+# 主頁顯示
+st.header(f"📍 {selected_date} 完整行程（{selected_date.strftime('%A')}）")
 
-if weekday == "Saturday":
+if selected_date.strftime("%A") == "Saturday":
     day_type = "saturday"
-elif weekday == "Sunday":
+elif selected_date.strftime("%A") == "Sunday":
     day_type = "sunday"
 else:
     day_type = "weekday"
@@ -52,9 +54,9 @@ try:
                     if row.get('description'):
                         st.caption(row['description'])
                 with col3:
-                    st.checkbox("完成", key=f"task_{idx}")
+                    st.checkbox("✅ 完成", key=f"task_{idx}_{selected_date}")
     else:
-        st.info("請確認 schema 與資料已正確插入")
+        st.info("尚未找到該日行程，請確認 schema 已執行")
 except Exception as e:
     st.error(f"讀取失敗: {e}")
 
