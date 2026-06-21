@@ -8,8 +8,8 @@ st.title("📅 個人品牌成長儀表板")
 st.caption("Supabase + Streamlit | 為瑗設計")
 
 # Supabase 連線（請替換 Key）
-SUPABASE_URL = "https://mniykrzyitzmxdwwali.supabase.co"
-SUPABASE_KEY = "您的 anon key"   # ← 請貼上
+SUPABASE_URL = "https://mniykroryzitmxdwwali.supabase.co"
+SUPABASE_KEY = "sb_publishable_tQ2-mcPmqFFGf96OooR4oA_pzVFOVg7"   # ← 請貼上
 
 try:
     from supabase import create_client, Client
