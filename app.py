@@ -1,4 +1,3 @@
-cat > app.py << 'EOF'
 import streamlit as st
 import pandas as pd
 from datetime import date
@@ -63,4 +62,3 @@ if st.button("💾 儲存今日記錄", type="primary"):
     st.balloons()
 
 st.caption("Made with ❤️ by Grok")
-EOF
