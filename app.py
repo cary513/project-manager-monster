@@ -5,11 +5,12 @@ from datetime import date
 st.set_page_config(page_title="個人品牌成長儀表板", layout="wide", page_icon="📅")
 
 st.title("📊 個人品牌成長儀表板")
-st.caption("Supabase + Streamlit | 為瑗設計")
+
 
 # === Supabase 連線（請替換 Key）===
 SUPABASE_URL = "https://mniykroryzitmxdwwali.supabase.co"
 SUPABASE_KEY = "sb_publishable_tQ2-mcPmqFFGf96OooR4oA_pzVFOVg7"   # ← 請貼上真實 anon key
+
 
 try:
     from supabase import create_client, Client
@@ -81,4 +82,3 @@ if st.button("💾 儲存今日記錄", type="primary"):
 
 st.success("🍽️ 16:8 飲食窗：12:00 – 20:20")
 
-st.caption("Made with ❤️ by Grok")
